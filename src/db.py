@@ -34,3 +34,18 @@ def get_config(DB_PATH, guild_id, key, default=None):
     conn.close()
 
     return row[0] if row else default
+
+def get_all_config(DB_PATH, guild_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''SELECT config_key, config_value FROM config WHERE guild_id = ?''', (guild_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def delete_config(DB_PATH, guild_id, key):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''DELETE FROM config WHERE guild_id = ? AND config_key = ?''', (guild_id, key))
+    conn.commit()
+    conn.close()
