@@ -10,7 +10,8 @@ class Bot(commands.Bot):
 
     async def setup_hook(self):
         db.init_db()  # Runs table creation
-        await self.tree.sync()  # Syncs slash commands globally
+
+        await self.tree.sync()
 
 
 bot = Bot()
@@ -39,6 +40,13 @@ async def on_guild_join(guild: discord.Guild):
 @bot.tree.command(name="ping", description="Check if the bot is responsive")
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message("Pong!")
+
+
+@bot.tree.command(name="hello", description="Greet the bot")
+async def hello(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        f"Hello, {interaction.user.mention}!", ephemeral=True
+    )
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
