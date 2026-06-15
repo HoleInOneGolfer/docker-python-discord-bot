@@ -1,8 +1,7 @@
 import os
 import discord
-from discord import app_commands
 from discord.ext import commands
-import db  # Imports our data layout layer from db.py natively
+import db
 
 
 class Bot(commands.Bot):
@@ -24,6 +23,11 @@ async def on_ready():
     print(
         f"🔗 Invite Link: {discord.utils.oauth_url(bot.user.id, permissions=discord.Permissions.all())}"
     )
+
+
+@bot.tree.command(name="ping", description="Check if the bot is responsive")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message("Pong!")
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
