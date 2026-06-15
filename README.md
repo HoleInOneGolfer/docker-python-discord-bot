@@ -7,7 +7,7 @@ single docker container Discord bot built with Python and discord.py.
 ```yaml
 services:
   discord-bot:
-    image: ghcr.io/holeinonegolfer/REPOSITORY_NAME:latest
+    image: ghcr.io/holeinonegolfer/docker-python-discord-bot:latest
     container_name: discord-bot
     restart: always
     environment:
