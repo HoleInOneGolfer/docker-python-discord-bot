@@ -6,12 +6,11 @@ import db
 
 class Bot(commands.Bot):
     def __init__(self):
-        # Initializing prefix-free slash configuration
         super().__init__(command_prefix="", intents=discord.Intents.default())
 
     async def setup_hook(self):
-        db.init_db()  # Runs your isolated DB setup on script launch
-        await self.tree.sync()  # Syncs your slash commands natively with Discord
+        db.init_db()  # Runs table creation
+        await self.tree.sync()  # Syncs slash commands globally
 
 
 bot = Bot()
@@ -20,9 +19,21 @@ bot = Bot()
 @bot.event
 async def on_ready():
     print(f"🚀 {bot.user.name} template container initialized and ready!")
+
+    # Track every server the bot is already in on startup
+    for guild in bot.guilds:
+        db.add_guild(guild.id)
+
     print(
         f"🔗 Invite Link: {discord.utils.oauth_url(bot.user.id, permissions=discord.Permissions.all())}"
     )
+
+
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    """Fires instantly when invited to a new server."""
+    db.add_guild(guild.id)
+    print(f"➕ Added new server: {guild.name} ({guild.id})")
 
 
 @bot.tree.command(name="ping", description="Check if the bot is responsive")
