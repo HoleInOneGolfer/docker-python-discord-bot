@@ -89,7 +89,7 @@ async def embed(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @bot.tree.command(name="set_config", description="Save a configuration setting for this server")
-@discord.app_commands.checks.has_permissions(administrator=True) # Optional: Restricts to Admins
+@discord.app_commands.checks.has_permissions(administrator=True)
 async def set_setting(interaction: discord.Interaction, name: str, value: str):
     db.set_config(DB_FILE_PATH, interaction.guild_id, name, value)
     await interaction.response.send_message(f"Config updated: `{name}` is now set to `{value}`", ephemeral=True)
@@ -98,6 +98,24 @@ async def set_setting(interaction: discord.Interaction, name: str, value: str):
 async def get_setting(interaction: discord.Interaction, name: str):
     current_value = db.get_config(DB_FILE_PATH, interaction.guild_id, name, default="Not Set")
     await interaction.response.send_message(f"Setting for `{name}`: `{current_value}`", ephemeral=True)
+
+@bot.tree.command(name="list_configs", description="List all configuration settings saved for this server")
+async def list_settings(interaction: discord.Interaction):
+    configs = db.get_all_config(DB_FILE_PATH, interaction.guild_id)
+    if not configs:
+        await interaction.response.send_message("No configuration settings found for this server.", ephemeral=True)
+        return
+    lines = []
+    for name, value in configs:
+        lines.append(f"• `{name}`: `{value}`")
+    config_list = "\n".join(lines)
+    await interaction.response.send_message(f"**Current Server Configurations:**\n{config_list}", ephemeral=True)
+
+@bot.tree.command(name="remove_config", description="Delete a configuration setting from this server")
+@discord.app_commands.checks.has_permissions(administrator=True)
+async def remove_setting(interaction: discord.Interaction, name: str):
+    db.delete_config(DB_FILE_PATH, interaction.guild_id, name)
+    await interaction.response.send_message(f"Configuration setting `{name}` has been removed.", ephemeral=True)
 
 @bot.event
 async def on_command_error(ctx, error):
