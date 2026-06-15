@@ -1,8 +1,10 @@
 # docker-python-discord-bot
 
-single docker container Discord bot built with Python and discord.py.
+Just a simple Discord bot written in Python (discord.py) that runs inside a single Docker container.
 
-## Docker Compose configuration example
+## How to run it with Docker Compose
+
+Create a docker-compose.yml file, throw your bot token in there, and point the volume to wherever your code lives.
 
 ```yaml
 services:
@@ -13,5 +15,12 @@ services:
     environment:
       - DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
     volumes:
-      - ./bot:/data
+      # Maps your local data folder to the container's data folder
+      - ./data:/data
+```
+
+Once that's set up, just run:
+
+```bash
+docker-compose up -d
 ```
