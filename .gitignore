@@ -219,3 +219,4 @@ __marimo__/
 
 # docker persistent data
 bot/
+data/

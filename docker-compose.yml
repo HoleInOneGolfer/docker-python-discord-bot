@@ -5,8 +5,7 @@ services:
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
     volumes:
-      # Your persistent data volume for SQLite
-      - ./bot:/data
+      - ./data:/data
 
       - ./src:/app/src # ⚡ DEVELOPER MODE: Mount your source code for live updates
     build: . # ⚡ DEVELOPER MODE: Build from local Dockerfile

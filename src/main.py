@@ -1,52 +1,84 @@
-import os
 import discord
 from discord.ext import commands
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
 import db
 
+if load_dotenv():
+    print(".env file loaded successfully.")
+else:
+    print("No .env file found or failed to load (using system environment variables).")
 
-class Bot(commands.Bot):
-    def __init__(self):
-        super().__init__(command_prefix="", intents=discord.Intents.default())
+if "DEV_MODE" in os.environ:
+    DATA_DIR = Path("./data")
+    print("DEV_MODE is enabled.")
+else:
+    DATA_DIR = Path("/data")
+    print("DEV_MODE is disabled.")
 
-    async def setup_hook(self):
-        db.init_db()  # Runs table creation
+DB_FILE_PATH = DATA_DIR / "db.sqlite"
 
-        await self.tree.sync()
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+if not DISCORD_TOKEN:
+    print("DISCORD_TOKEN is not set. Please set it in the .env file or system environment variables.")
+    exit(1)
 
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+intents.presences = True
 
-bot = Bot()
-
+bot = commands.Bot(command_prefix="", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"🚀 {bot.user.name} template container initialized and ready!")
+    print(f"{bot.user.name} has logged in!")
+    print(f"Invite URL: {discord.utils.oauth_url(bot.user.id, permissions=discord.Permissions(permissions=8))}")
 
-    # Track every server the bot is already in on startup
-    for guild in bot.guilds:
-        db.add_guild(guild.id)
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="developing new bots"))
 
-    print(
-        f"🔗 Invite Link: {discord.utils.oauth_url(bot.user.id, permissions=discord.Permissions.all())}"
-    )
+    db.init_db(DB_FILE_PATH)
 
+    try:
+        print("Scrubbing ghost guild commands...")
+        for guild in bot.guilds:
+            db.save_guild(DB_FILE_PATH, guild.id, guild.name)
+
+            bot.tree.clear_commands(guild=guild)
+            await bot.tree.sync(guild=guild)
+
+        print("Syncing global commands...")
+        synced = await bot.tree.sync()
+        print(f"Successfully synced {len(synced)} global command(s)!")
+
+    except Exception as e:
+        print(f"Error during sync: {e}")
 
 @bot.event
 async def on_guild_join(guild: discord.Guild):
-    """Fires instantly when invited to a new server."""
-    db.add_guild(guild.id)
-    print(f"➕ Added new server: {guild.name} ({guild.id})")
+    print(f"Joined a new server: {guild.name} (ID: {guild.id})")
+    db.save_guild(DB_FILE_PATH, guild.id, guild.name)
 
+    try:
+        bot.tree.clear_commands(guild=guild)
+        await bot.tree.sync(guild=guild)
+    except Exception as e:
+        print(f"Failed to sync newly joined guild tree: {e}")
 
-@bot.tree.command(name="ping", description="Check if the bot is responsive")
+@bot.tree.command(name="ping", description="Responds with Pong!")
 async def ping(interaction: discord.Interaction):
     await interaction.response.send_message("Pong!")
 
-
-@bot.tree.command(name="hello", description="Greet the bot")
+@bot.tree.command(name="hello", description="Responds with a friendly greeting!")
 async def hello(interaction: discord.Interaction):
-    await interaction.response.send_message(
-        f"Hello, {interaction.user.mention}!", ephemeral=True
-    )
+    await interaction.response.send_message(f"Hello, {interaction.user.mention}!", ephemeral=True)
 
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    raise error
 
-bot.run(os.getenv("DISCORD_TOKEN"))
+bot.run(DISCORD_TOKEN)
