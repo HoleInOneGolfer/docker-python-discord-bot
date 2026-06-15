@@ -75,6 +75,19 @@ async def ping(interaction: discord.Interaction):
 async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f"Hello, {interaction.user.mention}!", ephemeral=True)
 
+@bot.tree.command(name="dm", description="Sends you a direct message!")
+async def dm(interaction: discord.Interaction):
+    try:
+        await interaction.user.send("This is a direct message from the bot!")
+        await interaction.response.send_message("I've sent you a DM!", ephemeral=True)
+    except discord.Forbidden:
+        await interaction.response.send_message("I couldn't send you a DM. Please check your privacy settings.", ephemeral=True)
+
+@bot.tree.command(name="embed", description="Sends an embedded message!")
+async def embed(interaction: discord.Interaction):
+    embed = discord.Embed(title="Example Embed", description="This is an example embedded message!")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
