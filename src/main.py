@@ -83,6 +83,11 @@ async def dm(interaction: discord.Interaction):
     except discord.Forbidden:
         await interaction.response.send_message("I couldn't send you a DM. Please check your privacy settings.", ephemeral=True)
 
+@bot.tree.command(name="embed", description="Sends an embedded message!")
+async def embed(interaction: discord.Interaction):
+    embed = discord.Embed(title="Example Embed", description="This is an example embedded message!")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
