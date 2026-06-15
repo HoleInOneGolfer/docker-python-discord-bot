@@ -88,6 +88,17 @@ async def embed(interaction: discord.Interaction):
     embed = discord.Embed(title="Example Embed", description="This is an example embedded message!")
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
+@bot.tree.command(name="set_config", description="Save a configuration setting for this server")
+@discord.app_commands.checks.has_permissions(administrator=True) # Optional: Restricts to Admins
+async def set_setting(interaction: discord.Interaction, name: str, value: str):
+    db.set_config(DB_FILE_PATH, interaction.guild_id, name, value)
+    await interaction.response.send_message(f"Config updated: `{name}` is now set to `{value}`", ephemeral=True)
+
+@bot.tree.command(name="get_config", description="Look up a configuration setting for this server")
+async def get_setting(interaction: discord.Interaction, name: str):
+    current_value = db.get_config(DB_FILE_PATH, interaction.guild_id, name, default="Not Set")
+    await interaction.response.send_message(f"Setting for `{name}`: `{current_value}`", ephemeral=True)
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
