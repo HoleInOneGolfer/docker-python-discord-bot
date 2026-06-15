@@ -45,11 +45,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          # This injects your exact custom Unix epoch timestamp signature alongside standard tags
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=${{ github.run_number }}
-            type=raw,value=raw-seconds-{{date 'X'}}
+            type=raw,value={{date 'X'}}
 
       # Builds the image using actions/cache tracking to optimize compilation speeds
       - name: Build and push Docker image

@@ -2,12 +2,12 @@
 
 single docker container Discord bot built with Python and discord.py.
 
-## Docker Compose configuration example:
+## Docker Compose configuration example
 
 ```yaml
 services:
   discord-bot:
-    build: .
+    image: ghcr.io/holeinonegolfer/docker-python-discord-bot:latest
     container_name: discord-bot
     restart: always
     environment:
